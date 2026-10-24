@@ -1,0 +1,22 @@
+# Secrets et configuration locale
+.env
+.env.*
+!.env.example
+
+# Éditeurs
+.vscode/
+.idea/
+*.swp
+
+# Système
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Dépendances et sorties futures
+node_modules/
+dist/
+coverage/
+__pycache__/
+.venv/
+venv/

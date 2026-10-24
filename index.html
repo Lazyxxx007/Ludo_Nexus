@@ -1,0 +1,319 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#080a14">
+  <title>LUDO NEXUS — Prototype v0.1</title>
+  <style>
+    :root {
+      --bg:#080a14; --panel:#101426; --panel2:#151b30; --line:#27304b;
+      --text:#edf2ff; --muted:#8f9bb9; --cyan:#45f3ff; --violet:#a66bff;
+      --pink:#ff4fbd; --orange:#ffb454; --green:#61f7b0;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;background:radial-gradient(ellipse at 50% -15%,#22204b 0,transparent 48%),var(--bg);color:var(--text);font:15px/1.45 Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,sans-serif;min-height:100vh}
+    button{font:inherit;cursor:pointer}
+    .shell{max-width:1440px;margin:auto;padding:24px}
+    header{display:flex;justify-content:space-between;align-items:center;gap:18px;margin-bottom:24px}
+    .brand{display:flex;align-items:center;gap:12px}
+    .logo{width:44px;height:44px;border:1px solid var(--cyan);border-radius:13px;display:grid;place-items:center;color:var(--cyan);font-weight:900;font-size:21px;box-shadow:0 0 24px #45f3ff25,inset 0 0 15px #45f3ff12}
+    .eyebrow{color:var(--cyan);font-size:11px;letter-spacing:.2em;text-transform:uppercase;font-weight:800}
+    h1{font-size:clamp(24px,3vw,38px);line-height:1.05;margin:3px 0 0;letter-spacing:-.04em}
+    .header-right{display:flex;gap:10px;align-items:center}
+    .status{border:1px solid #2c3552;background:#11162a;padding:8px 12px;border-radius:999px;color:var(--muted);font-size:12px}
+    .status span{display:inline-block;width:7px;height:7px;background:var(--green);border-radius:50%;margin-right:7px;box-shadow:0 0 9px var(--green)}
+    .layout{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(300px,.8fr);gap:20px;align-items:start}
+    .panel{background:linear-gradient(150deg,#12172aee,#0d1120f5);border:1px solid var(--line);border-radius:20px;box-shadow:0 16px 55px #0003;overflow:hidden}
+    .panel-head{padding:18px 20px;border-bottom:1px solid #252d45;display:flex;justify-content:space-between;align-items:center;gap:12px}
+    .panel-head h2{font-size:14px;text-transform:uppercase;letter-spacing:.13em;margin:0}
+    .panel-head p{margin:4px 0 0;color:var(--muted);font-size:12px}
+    .board-wrap{padding:20px;display:grid;place-items:center}
+    .board{position:relative;width:min(100%,680px);aspect-ratio:1;border:1px solid #344061;border-radius:22px;overflow:hidden;background:
+      radial-gradient(circle at center,#1c2340 0,#11162b 31%,#0b1020 67%,#090d19 100%);
+      box-shadow:inset 0 0 55px #0009,0 0 38px #a66bff0b}
+    .board:before{content:"";position:absolute;inset:5%;border:1px solid #45f3ff18;border-radius:50%;box-shadow:0 0 45px #45f3ff09}
+    .board:after{content:"";position:absolute;inset:17%;border:1px dashed #a66bff38;border-radius:50%;pointer-events:none}
+    .orbit{position:absolute;left:50%;top:50%;width:68%;height:68%;transform:translate(-50%,-50%);border:1px solid #45f3ff35;border-radius:50%;box-shadow:0 0 24px #45f3ff0a,inset 0 0 24px #a66bff0b}
+    .center-core{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:24%;aspect-ratio:1;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;background:radial-gradient(circle,#22294c,#11162a 70%);border:1px solid #a66bff77;box-shadow:0 0 28px #a66bff20;text-align:center;z-index:1}
+    .core-symbol{font-size:clamp(20px,4vw,38px);color:var(--cyan);text-shadow:0 0 18px #45f3ff99}
+    .core-name{font-size:clamp(8px,1.3vw,12px);letter-spacing:.18em;font-weight:900}
+    .core-sub{font-size:9px;color:var(--muted);letter-spacing:.12em;margin-top:3px}
+    .home{position:absolute;width:26%;height:20%;border:1px solid #ffffff19;border-radius:13px;background:#ffffff06;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px}
+    .home.red{top:5%;left:5%;border-color:#ff4fbd55}.home.blue{top:5%;right:5%;border-color:#45f3ff55}
+    .home.yellow{bottom:5%;left:5%;border-color:#ffb45455}.home.green{bottom:5%;right:5%;border-color:#61f7b055}
+    .home-label{font-size:10px;font-weight:900;letter-spacing:.12em;text-transform:uppercase}
+    .slots{display:grid;grid-template-columns:repeat(2,18px);gap:6px}
+    .slot{width:18px;height:18px;border-radius:50%;border:1px dashed #ffffff38;background:#ffffff06}
+    .slot.occupied{border-style:solid;box-shadow:0 0 12px currentColor;background:currentColor}
+    .red .slot.occupied{color:var(--pink)}.blue .slot.occupied{color:var(--cyan)}.yellow .slot.occupied{color:var(--orange)}.green .slot.occupied{color:var(--green)}
+    .space{position:absolute;width:3.7%;aspect-ratio:1;border-radius:50%;transform:translate(-50%,-50%);border:1px solid #6d789c88;background:#202943;box-shadow:0 0 9px #0006;z-index:2}
+    .space.safe{border-color:#45f3ffb0;background:#153a4b;box-shadow:0 0 10px #45f3ff28}
+    .space.start-red{background:#63234e;border-color:var(--pink)}.space.start-blue{background:#124e5a;border-color:var(--cyan)}
+    .space.start-yellow{background:#60401e;border-color:var(--orange)}.space.start-green{background:#14513c;border-color:var(--green)}
+    .pawn{position:absolute;width:5.5%;aspect-ratio:1;border-radius:50%;transform:translate(-50%,-50%);z-index:5;border:2px solid #fff9;box-shadow:0 0 13px currentColor,0 2px 5px #000b;cursor:pointer;transition:left .25s,top .25s,transform .15s}
+    .pawn:hover{transform:translate(-50%,-50%) scale(1.18)}
+    .pawn.red{background:var(--pink);color:var(--pink)}.pawn.blue{background:var(--cyan);color:var(--cyan)}.pawn.yellow{background:var(--orange);color:var(--orange)}.pawn.green{background:var(--green);color:var(--green)}
+    .pawn.selected{outline:3px solid white;outline-offset:3px}
+    .board-foot{display:flex;justify-content:space-between;gap:12px;align-items:center;width:100%;max-width:680px;color:var(--muted);font-size:12px;margin-top:14px}
+    .legend{display:flex;gap:12px;flex-wrap:wrap}.legend-item{display:flex;gap:6px;align-items:center}.dot{width:7px;height:7px;border-radius:50%}
+    .side{display:grid;gap:20px}
+    .turn-card{padding:20px;background:linear-gradient(135deg,#1b2340,#12172a 72%);border-bottom:1px solid #2d3654}
+    .turn-top{display:flex;align-items:center;justify-content:space-between;gap:10px}
+    .turn-label{font-size:11px;text-transform:uppercase;letter-spacing:.16em;color:var(--muted)}
+    .player-name{font-size:23px;font-weight:850;margin-top:4px}
+    .turn-dot{width:13px;height:13px;border-radius:50%;background:var(--pink);box-shadow:0 0 16px currentColor}
+    .turn-hint{color:#a9b5d1;font-size:13px;margin:12px 0 0}
+    .dice-row{display:flex;align-items:center;gap:16px;padding:20px}
+    .dice{width:74px;height:74px;border:1px solid #4d5a7d;border-radius:18px;background:linear-gradient(145deg,#222b48,#101629);display:grid;place-items:center;font-size:39px;color:var(--cyan);text-shadow:0 0 16px #45f3ff88;box-shadow:inset 0 0 22px #45f3ff0b;flex-shrink:0}
+    .dice-info{flex:1}.dice-info strong{display:block;font-size:14px}.dice-info p{margin:4px 0 0;color:var(--muted);font-size:12px}
+    .primary,.secondary{border:0;border-radius:12px;padding:13px 16px;font-weight:850;transition:transform .15s,filter .15s}
+    .primary{background:linear-gradient(100deg,var(--cyan),#88fcff);color:#07131a;box-shadow:0 5px 22px #45f3ff20}
+    .primary:hover,.secondary:hover{filter:brightness(1.08);transform:translateY(-1px)}
+    .primary:disabled{opacity:.35;cursor:not-allowed;filter:none;transform:none}
+    .secondary{background:#202844;color:var(--text);border:1px solid #34405f}
+    .actions{padding:0 20px 20px;display:grid;gap:9px}
+    .actions .primary{width:100%}
+    .message{min-height:40px;padding:10px 12px;border:1px solid #303b59;border-radius:10px;color:#c4cee5;font-size:12px;background:#0a0e1b}
+    .section{padding:18px 20px}.section h3{font-size:12px;text-transform:uppercase;letter-spacing:.14em;color:#aab6d2;margin:0 0 14px}
+    .players{display:grid;gap:10px}
+    .player-row{display:flex;align-items:center;gap:10px;padding:10px;border:1px solid #252e48;border-radius:12px;background:#0d1221}
+    .player-icon{width:32px;height:32px;border-radius:10px;display:grid;place-items:center;font-weight:900}
+    .player-row .meta{flex:1}.player-row strong{font-size:13px;display:block}.player-row small{font-size:11px;color:var(--muted)}
+    .count{font-weight:850;font-variant-numeric:tabular-nums}
+    .red-bg{background:#4d1e42;color:var(--pink)}.blue-bg{background:#123e49;color:var(--cyan)}.yellow-bg{background:#50391f;color:var(--orange)}.green-bg{background:#164331;color:var(--green)}
+    .log{display:grid;gap:8px;max-height:180px;overflow:auto}.log-item{font-size:12px;color:#aebad5;border-left:2px solid #34405e;padding:3px 0 3px 10px}.log-item:first-child{border-color:var(--cyan);color:#e0e8ff}
+    .footer{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;color:#65718f;font-size:11px;padding:18px 4px}
+    .tag{border:1px solid #33405e;border-radius:7px;padding:4px 7px;font-size:10px;color:#aebbd9;letter-spacing:.08em}
+    @media(max-width:900px){.layout{grid-template-columns:1fr}.board-wrap{padding:12px}.board{width:min(100%,620px)}.side{grid-template-columns:1fr 1fr}.side .panel:first-child{grid-column:1/-1}}
+    @media(max-width:560px){.shell{padding:14px}.header-right .status{display:none}.side{grid-template-columns:1fr}.side .panel:first-child{grid-column:auto}.panel-head{padding:15px}.home{width:29%;height:19%}.slots{grid-template-columns:repeat(2,13px);gap:4px}.slot{width:13px;height:13px}.home-label{font-size:8px}.board-foot{font-size:10px}.dice{width:62px;height:62px}.dice-row{padding:15px}}
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <header>
+      <div class="brand">
+        <div class="logo">N</div>
+        <div><div class="eyebrow">Prototype jouable · v0.1</div><h1>LUDO <span style="color:var(--cyan)">NEXUS</span></h1></div>
+      </div>
+      <div class="header-right"><div class="status"><span></span>Prototype local actif</div><div class="tag">CYBERPUNK / TACTICAL</div></div>
+    </header>
+
+    <div class="layout">
+      <section class="panel">
+        <div class="panel-head"><div><h2>Arène de convergence</h2><p>Un prototype du futur plateau Nexus</p></div><span class="tag">4 FACTIONS</span></div>
+        <div class="board-wrap">
+          <div class="board" id="board" aria-label="Plateau de jeu">
+            <div class="orbit"></div>
+            <div class="home red"><div class="home-label" style="color:var(--pink)">01 · Éclipse</div><div class="slots" id="slots-red"></div></div>
+            <div class="home blue"><div class="home-label" style="color:var(--cyan)">02 · Nova</div><div class="slots" id="slots-blue"></div></div>
+            <div class="home yellow"><div class="home-label" style="color:var(--orange)">03 · Titan</div><div class="slots" id="slots-yellow"></div></div>
+            <div class="home green"><div class="home-label" style="color:var(--green)">04 · Phantom</div><div class="slots" id="slots-green"></div></div>
+            <div class="center-core"><div class="core-symbol">✳</div><div class="core-name">NEXUS</div><div class="core-sub">CORE ONLINE</div></div>
+          </div>
+          <div class="board-foot"><div class="legend"><span class="legend-item"><i class="dot" style="background:var(--pink)"></i>Éclipse</span><span class="legend-item"><i class="dot" style="background:var(--cyan)"></i>Nova</span><span class="legend-item"><i class="dot" style="background:var(--orange)"></i>Titan</span><span class="legend-item"><i class="dot" style="background:var(--green)"></i>Phantom</span></div><span>Prototype local · 1 joueur</span></div>
+        </div>
+      </section>
+
+      <aside class="side">
+        <section class="panel">
+          <div class="turn-card">
+            <div class="turn-top"><div><div class="turn-label">Tour en cours</div><div class="player-name" id="currentName">Éclipse</div></div><div class="turn-dot" id="turnDot"></div></div>
+            <p class="turn-hint" id="turnHint">Lance le dé pour commencer. Un 6 permet de déployer une unité.</p>
+          </div>
+          <div class="dice-row"><div class="dice" id="dice">—</div><div class="dice-info"><strong id="diceTitle">Dé quantique</strong><p id="diceText">En attente d'un lancer</p></div></div>
+          <div class="actions">
+            <button class="primary" id="rollBtn">⚡ Lancer le dé</button>
+            <button class="secondary" id="newBtn">↻ Nouvelle partie</button>
+            <div class="message" id="message" role="status">Bienvenue dans l'arène. Lance le dé pour jouer.</div>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="section"><h3>État des factions</h3><div class="players" id="players"></div></div>
+        </section>
+
+        <section class="panel">
+          <div class="section"><h3>Journal de mission</h3><div class="log" id="log"><div class="log-item">Système initialisé. En attente du premier lancer.</div></div></div>
+        </section>
+      </aside>
+    </div>
+    <div class="footer"><span>LUDO NEXUS · Prototype personnel en développement</span><span>v0.1.0 · HTML / CSS / JavaScript · Aucun serveur requis</span></div>
+  </main>
+<script>
+(() => {
+  const factions = [
+    {id:'red',name:'Éclipse',color:'#ff4fbd',start:0,icon:'E'},
+    {id:'blue',name:'Nova',color:'#45f3ff',start:10,icon:'N'},
+    {id:'yellow',name:'Titan',color:'#ffb454',start:20,icon:'T'},
+    {id:'green',name:'Phantom',color:'#61f7b0',start:30,icon:'P'}
+  ];
+  const board = document.getElementById('board');
+  const rollBtn = document.getElementById('rollBtn');
+  const newBtn = document.getElementById('newBtn');
+  let state;
+
+  // Prototype V0.1 : parcours circulaire partagé de 40 cases.
+  // Les règles seront extraites dans un moteur indépendant dans une version ultérieure.
+  function freshState() {
+    return {turn:0,die:null,awaitingMove:false,finished:false,players:factions.map(f=>({id:f.id,pawns:Array(4).fill(-1),finished:0})),log:['Système initialisé. En attente du premier lancer.']};
+  }
+  function addLog(text) {
+    state.log.unshift(text);
+    state.log = state.log.slice(0,8);
+    renderLog();
+  }
+  function renderLog() {
+    document.getElementById('log').innerHTML = state.log.map(x=>`<div class="log-item">${escapeHtml(x)}</div>`).join('');
+  }
+  function escapeHtml(s){return s.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+  function pathPoint(index) {
+    const angle = (-Math.PI/2) + (index/40)*Math.PI*2;
+    const radiusX = 35.5, radiusY = 35.5;
+    return {x:50 + Math.cos(angle)*radiusX, y:50 + Math.sin(angle)*radiusY};
+  }
+  function buildBoard() {
+    board.querySelectorAll('.space,.pawn').forEach(n=>n.remove());
+    for(let i=0;i<40;i++){
+      const p=pathPoint(i), s=document.createElement('div');
+      s.className='space'+([0,10,20,30].includes(i)?' safe':'');
+      const start=factions.find(f=>f.start===i);
+      if(start)s.classList.add('start-'+start.id);
+      s.style.left=p.x+'%';s.style.top=p.y+'%';s.title='Case '+(i+1);
+      board.appendChild(s);
+    }
+  }
+  function pawnPosition(playerIndex, pawnIndex, progress) {
+    if(progress<0){
+      const homes={
+        red:[[15,15],[21,15],[15,21],[21,21]],
+        blue:[[79,15],[85,15],[79,21],[85,21]],
+        yellow:[[15,79],[21,79],[15,85],[21,85]],
+        green:[[79,79],[85,79],[79,85],[85,85]]
+      };
+      return {x:homes[factions[playerIndex].id][pawnIndex][0],y:homes[factions[playerIndex].id][pawnIndex][1]};
+    }
+    const p=pathPoint(progress);
+    const globalIndex=(factions[playerIndex].start+progress)%40;
+    const track=pathPoint(globalIndex);
+    return {x:track.x,y:track.y};
+  }
+  function currentPlayer(){return state.players[state.turn];}
+  function currentFaction(){return factions[state.turn];}
+  function validMoves() {
+    const p=currentPlayer();
+    return p.pawns.map((progress,i)=>({i,progress})).filter(x=>x.progress>=0 ? x.progress+state.die<=39 : state.die===6);
+  }
+  function renderPawns() {
+    board.querySelectorAll('.pawn').forEach(n=>n.remove());
+    state.players.forEach((player,pi)=>{
+      player.pawns.forEach((progress,idx)=>{
+        if(progress===40)return;
+        const pos=pawnPosition(pi,idx,progress);
+        const pawn=document.createElement('button');
+        pawn.className='pawn '+player.id;
+        if(state.awaitingMove && pi===state.turn && validMoves().some(m=>m.i===idx))pawn.classList.add('selected');
+        pawn.style.left=pos.x+'%';pawn.style.top=pos.y+'%';
+        pawn.setAttribute('aria-label',`${factions[pi].name}, pion ${idx+1}`);
+        pawn.title=`${factions[pi].name} · pion ${idx+1}`+(state.awaitingMove&&pi===state.turn?' — cliquer pour déplacer':'');
+        pawn.addEventListener('click',()=>selectPawn(pi,idx));
+        board.appendChild(pawn);
+      });
+    });
+  }
+  function renderPlayers() {
+    document.getElementById('players').innerHTML=state.players.map((p,i)=>{
+      const f=factions[i], onTurn=i===state.turn;
+      const out=p.pawns.filter(x=>x===-1).length, active=p.pawns.filter(x=>x>=0&&x<40).length, finished=p.pawns.filter(x=>x===40).length;
+      return `<div class="player-row" style="${onTurn?'border-color:'+f.color+'66':''}">
+        <div class="player-icon ${f.id}-bg">${f.icon}</div>
+        <div class="meta"><strong>${f.name}${onTurn?' · À jouer':''}</strong><small>${out} en base · ${active} en course · ${finished} arrivé(s)</small></div>
+        <div class="count" style="color:${f.color}">${finished}/4</div>
+      </div>`;
+    }).join('');
+  }
+  function renderTurn() {
+    const f=currentFaction(), p=currentPlayer();
+    document.getElementById('currentName').textContent=f.name;
+    document.getElementById('currentName').style.color=f.color;
+    document.getElementById('turnDot').style.background=f.color;
+    document.getElementById('turnDot').style.color=f.color;
+    document.getElementById('dice').textContent=state.die===null?'—':['⚀','⚁','⚂','⚃','⚄','⚅'][state.die-1];
+    document.getElementById('diceTitle').textContent=state.die===null?'Dé quantique':`Résultat : ${state.die}`;
+    document.getElementById('diceText').textContent=state.awaitingMove?'Sélectionne un pion lumineux sur le plateau.':state.finished?'Partie terminée':'Prêt pour le prochain lancer';
+    document.getElementById('turnHint').textContent=state.finished?'Une faction a remporté la partie.':state.awaitingMove?'Choisis un pion valide pour appliquer le déplacement.':'Lance le dé. Un 6 permet de déployer une unité.';
+    rollBtn.disabled=state.awaitingMove||state.finished;
+  }
+  function render() {
+    renderPawns();renderPlayers();renderTurn();renderLog();
+  }
+  function nextTurn(extra=false) {
+    if(!extra)state.turn=(state.turn+1)%4;
+    state.die=null;state.awaitingMove=false;
+    render();
+  }
+  function roll() {
+    if(state.awaitingMove||state.finished)return;
+    state.die=Math.floor(Math.random()*6)+1;
+    const moves=validMoves();
+    document.getElementById('message').textContent=`Le dé quantique affiche ${state.die}.`;
+    addLog(`${currentFaction().name} lance le dé : ${state.die}.`);
+    if(moves.length===0){
+      document.getElementById('message').textContent=state.die===6?'Aucun pion ne peut sortir malgré le 6. Tour suivant.':'Aucun déplacement possible. Tour suivant.';
+      addLog('Aucun déplacement légal : tour passé.');
+      const extra=state.die===6;
+      setTimeout(()=>{if(!state.finished)nextTurn(extra);},700);
+      render();return;
+    }
+    state.awaitingMove=true;
+    if(moves.length===1){
+      render();
+      document.getElementById('message').textContent='Un seul déplacement est possible : clique sur le pion lumineux.';
+    } else {
+      render();
+      document.getElementById('message').textContent='Sélectionne un pion lumineux pour le déplacer.';
+    }
+  }
+  function selectPawn(pi,idx) {
+    if(!state.awaitingMove||pi!==state.turn)return;
+    const move=validMoves().find(m=>m.i===idx);
+    if(!move){document.getElementById('message').textContent='Ce pion ne peut pas jouer avec ce résultat.';return;}
+    const player=currentPlayer(), old=player.pawns[idx];
+    let target;
+    if(old===-1) target=0;
+    else target=old+state.die;
+    if(target>40){document.getElementById('message').textContent='Déplacement impossible.';return;}
+    player.pawns[idx]=target;
+    let captured=0;
+    if(target>=0 && target<40 && ![0,10,20,30].includes((factions[pi].start+target)%40)){
+      state.players.forEach((op,oi)=>{
+        if(oi===pi)return;
+        op.pawns=op.pawns.map((pos,oi2)=>{
+          if(pos<0||pos>=40)return pos;
+          const global=(factions[oi].start+pos)%40;
+          const land=(factions[pi].start+target)%40;
+          if(global===land){captured++;return -1;}
+          return pos;
+        });
+      });
+    }
+    const f=currentFaction();
+    addLog(`${f.name} déplace le pion ${idx+1}${old===-1?' hors de sa base':''} vers la case ${target+1}.`);
+    if(captured){addLog(`${captured} pion(s) adverse(s) renvoyé(s) en base.`);}
+    document.getElementById('message').textContent=captured?`Capture réussie : ${captured} pion(s) adverse(s) renvoyé(s) en base.`:'Déplacement effectué.';
+    const extra=state.die===6;
+    if(player.pawns.every(x=>x===40)){state.finished=true;addLog(`${f.name} remporte la partie !`);document.getElementById('message').textContent=`Victoire de ${f.name} !`;}
+    // La voie finale dédiée à chaque faction sera ajoutée dans une prochaine version.
+    if(extra){addLog('Bonus : un 6 donne un nouveau lancer.');nextTurn(true);}
+    else nextTurn(false);
+  }
+  rollBtn.addEventListener('click',roll);
+  newBtn.addEventListener('click',()=>{
+    state=freshState();buildBoard();render();
+    document.getElementById('message').textContent='Nouvelle partie initialisée. À toi de jouer.';
+  });
+  state=freshState();buildBoard();render();
+})();
+</script>
+</body>
+</html>
